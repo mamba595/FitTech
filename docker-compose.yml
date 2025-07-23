@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
     image: postgres:15
-    container_name: first_container_ever
+    container_name: postgres-database
     restart: always
     ports:
       - "5432:5432"
@@ -21,8 +21,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      DATABASE_URL: postgresql://postgres:yourpassword@db:5432/fitness_db
+    env_file:
+      - .env
     volumes:
       - .:/app
 

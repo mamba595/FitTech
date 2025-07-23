@@ -8,7 +8,7 @@ class WorkoutLog(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
-    date: Mapped[datetime] = mapped_column()
+    date: Mapped[datetime] = mapped_column(default=datetime.utcnow())
     workout_type: Mapped[str] = mapped_column(String)
     duration: Mapped[int] = mapped_column()  # seconds
     total_distance: Mapped[float] = mapped_column()

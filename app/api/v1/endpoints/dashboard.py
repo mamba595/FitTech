@@ -25,7 +25,7 @@ def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_curr
         raise HTTPException(status_code=404, detail="Onboarding data not found")
 
     try:
-        onboarding = OnboardingData.from_orm(onboarding_db)
+        onboarding = OnboardingInDB.from_orm(onboarding_db)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid onboarding format: {e}")
 
