@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
     image: postgres:15
-    container_name: first_container_ever
+    container_name: nufi_api
     restart: always
     ports:
       - "5432:5432"
