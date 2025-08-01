@@ -19,8 +19,6 @@ def create_workout_log(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     log_data = log.dict()
-    if log_data.get("timestamp") is None:
-        log_data["timestamp"] = datetime.utcnow()
 
     workout_log = WorkoutLog(user_id=user_id, **log_data)
     db.add(workout_log)

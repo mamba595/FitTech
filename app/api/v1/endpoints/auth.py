@@ -18,7 +18,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
     db.add(user_in_db)
     db.commit()
-    db.refresh(user_in_db)  # refresh to get DB-generated id
+    db.refresh(user_in_db)
 
     return UserPublic(id=user_in_db.id, email=user_in_db.email)
 

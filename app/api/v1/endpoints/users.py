@@ -22,7 +22,9 @@ def create_onboarding(
     if existing:
         raise HTTPException(status_code=400, detail="Onboarding already exists")
 
-    onboarding = Onboarding(user_id=user_id, **data.dict())
+    data_dict = data.dict()
+    data_dict.pop('user_id', None)
+    onboarding = Onboarding(user_id=user_id, **data_dict)
     db.add(onboarding)
     db.commit()
     db.refresh(onboarding)

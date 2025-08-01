@@ -19,17 +19,15 @@ router = APIRouter()
 def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     user_id = current_user.id
 
-    # Get onboarding data
     onboarding_db = db.query(Onboarding).filter(Onboarding.user_id == user_id).first()
     if not onboarding_db:
         raise HTTPException(status_code=404, detail="Onboarding data not found")
 
     try:
-        onboarding = OnboardingData.from_orm(onboarding_db)
+        onboarding = OnboardingInDB.from_orm(onboarding_db)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid onboarding format: {e}")
 
-    # Calculations
     try:
         bmr = calculate_bmr(onboarding)
         tdee = calculate_tdee(onboarding)
@@ -37,12 +35,10 @@ def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_curr
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Define start and end of day for filtering logs
     now = datetime.utcnow()
     start_of_day = datetime(now.year, now.month, now.day)
     end_of_day = start_of_day + timedelta(days=1)
 
-    # Food logs for today
     food_logs_db = (
         db.query(FoodLog)
         .filter(
@@ -60,7 +56,6 @@ def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_curr
 
     food_logs = [FoodLogInDB.from_orm(log) for log in food_logs_db]
 
-    # Workout logs for today
     workouts_db = (
         db.query(WorkoutLog)
         .filter(
