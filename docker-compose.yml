@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:15
 <<<<<<< HEAD
-    container_name: nufi_api
+    container_name: fit_tech
 =======
     container_name: postgres-database
 >>>>>>> a960b941c737a85e0f6d0e4366ceca8ec1d5b3ed
