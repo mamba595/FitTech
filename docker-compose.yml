@@ -3,11 +3,7 @@ version: "3.8"
 services:
   db:
     image: postgres:15
-<<<<<<< HEAD
     container_name: fit_tech
-=======
-    container_name: postgres-database
->>>>>>> a960b941c737a85e0f6d0e4366ceca8ec1d5b3ed
     restart: always
     ports:
       - "5432:5432"
