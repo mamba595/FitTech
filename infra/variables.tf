@@ -30,3 +30,8 @@ variable "db_password" {
     type = string
     sensitive = true
 }
+
+variable "image" {
+    type = string
+    sensitive = true
+}

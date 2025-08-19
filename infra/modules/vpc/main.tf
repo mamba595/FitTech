@@ -78,7 +78,7 @@ resource "aws_iam_role" "ecs_task_role" {
 
 resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
     role       = aws_iam_role.ecs_task_role.name
-    policy_arn = "arn:aws:iam::aws:policy/AmazonECSTaskExecutionRolePolicy"
+    policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 resource "aws_security_group" "alb_sg" {
@@ -133,6 +133,8 @@ resource "aws_lb_target_group" "lb_tg" {
         unhealthy_threshold = 2
         matcher             = "200-299"    
     }
+
+    target_type = "ip"
 }
 
 resource "aws_lb_listener" "listener" {
@@ -144,6 +146,8 @@ resource "aws_lb_listener" "listener" {
         type = "forward"
         target_group_arn = aws_lb_target_group.lb_tg.arn
     }
+
+    depends_on = [aws_lb_target_group.lb_tg]
 }
 
 resource "aws_security_group" "rds_sg" {
@@ -173,7 +177,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 resource "aws_db_instance" "postgres_db" {
     identifier        = "postgres-db"
     engine            = "postgres"
-    engine_version    = "15.2"
+    engine_version    = "15.13"
     instance_class    = "db.t3.micro"
     allocated_storage = 20
 

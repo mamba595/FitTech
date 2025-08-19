@@ -21,3 +21,7 @@ variable "db_username" {
 variable "db_password" {
     type = string
 }
+
+variable "image" {
+    type = string
+}
