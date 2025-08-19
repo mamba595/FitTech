@@ -1,3 +1,5 @@
+data "aws_availability_zones" "available" {}
+
 resource "aws_vpc" "my_vpc" {
     cidr_block = var.vpc_cidr
     enable_dns_hostnames = true
@@ -14,7 +16,7 @@ resource "aws_subnet" "public" {
     map_public_ip_on_launch = true
     availability_zone = element(data.aws_availability_zones.available.names, count.index)
     tags = {
-        Name = "public-${count.index}
+        Name = "public-${count.index}"
     }
 }
 
@@ -24,7 +26,7 @@ resource "aws_subnet" "private" {
     cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + var.public_count)
     availability_zone = element(data.aws_availability_zones.available.names, count.index)
     tags = {
-        Name = "private-${count.index}
+        Name = "private-${count.index}"
     }
 }
 
@@ -37,7 +39,7 @@ resource "aws_internet_gateway" "IG" {
 
 resource "aws_eip" "nat" {
     count = var.public_count
-    vpc   = true
+    domain = "vpc"
 }
 
 resource "aws_nat_gateway" "ngw" {
@@ -63,7 +65,7 @@ resource "aws_ecs_cluster" "cluster" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-    name = "ecs_task_role"
+    name = "ecs-task-role"
     assume_role_policy = jsonencode({
         Version = "2012-10-17",
         Statement = [{
@@ -79,30 +81,138 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
     policy_arn = "arn:aws:iam::aws:policy/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_security_group" "alb_sg" {
+    name   = "alb-sg"
+    vpc_id = aws_vpc.my_vpc.id
+
+    ingress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "ecs_sg" {
+    name   = "ecs-sg"
+    vpc_id = aws_vpc.my_vpc.id
+
+    ingress {
+        from_port       = 8000
+        to_port         = 8000
+        protocol        = "tcp"
+        security_groups = [aws_security_group.alb_sg.id]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_lb_target_group" "lb_tg" {
+    name     = "lb-tg"
+    port     = 8000
+    protocol = "HTTP"
+    vpc_id   = aws_vpc.my_vpc.id
+
+    health_check {
+        path                = "/health"
+        interval            = 30
+        timeout             = 5
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        matcher             = "200-299"    
+    }
+}
+
+resource "aws_lb_listener" "listener" {
+    load_balancer_arn = aws_lb.alb.arn
+    port = 80
+    protocol = "HTTP"
+
+    default_action {
+        type = "forward"
+        target_group_arn = aws_lb_target_group.lb_tg.arn
+    }
+}
+
+resource "aws_security_group" "rds_sg" {
+    name   = "rds-sg"
+    vpc_id = aws_vpc.my_vpc.id
+
+    ingress {
+        from_port       = 5432
+        to_port         = 5432
+        protocol        = "tcp"
+        security_groups = [aws_security_group.ecs_sg.id]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_db_subnet_group" "rds_subnet_group" {
+    name = "rds-subnet-group"
+    subnet_ids = aws_subnet.private[*].id
+}
+
+resource "aws_db_instance" "postgres_db" {
+    identifier        = "postgres-db"
+    engine            = "postgres"
+    engine_version    = "15.2"
+    instance_class    = "db.t3.micro"
+    allocated_storage = 20
+
+    db_name  = var.db_name
+    username = var.db_username
+    password = var.db_password
+
+    db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+    vpc_security_group_ids = [aws_security_group.rds_sg.id]
+
+    publicly_accessible = false
+    multi_az            = true
+    skip_final_snapshot = true
+}
+
 resource "aws_ecs_task_definition" "api_task" {
-    family                  = "api_task"
-    network_mode            = "awsvpc"
-    requires_compatibilites = ["FARGATE"]
-    cpu                     = "256"
-    memory                  = "512"
-    execution_role_arn      = aws_iam_role.ecs_task_role.arn
-    task_role_arn           = aws_iam_role.ecs_task_role.arn
+    family                   = "api_task"
+    network_mode             = "awsvpc"
+    requires_compatibilities = ["FARGATE"]
+    cpu                      = "256"
+    memory                   = "512"
+    execution_role_arn       = aws_iam_role.ecs_task_role.arn
+    task_role_arn            = aws_iam_role.ecs_task_role.arn
 
     container_definitions = jsonencode([
         {
             name = "api"
-            image = ""
+            image = var.image
             cpu = 256
             memory = 512
             essential = true
             portMappings = [{ 
-                containerPort = 3000,
-                hostPort = 3000
+                containerPort = 8000,
+                hostPort      = 8000
             }]
             environment = [
                 {
                     name = "DATABASE_URL",
-                    value = ""
+                    value = "postgres://${var.db_username}:${var.db_password}@${aws_db_instance.postgres_db.endpoint}:5432/${var.db_name}"
                 }
             ]
         }
@@ -110,5 +220,23 @@ resource "aws_ecs_task_definition" "api_task" {
 }
 
 resource "aws_ecs_service" "api_service" {
-    name = "api
+    name = "api-service"
+    cluster = aws_ecs_cluster.cluster.id
+    task_definition = aws_ecs_task_definition.api_task.arn
+    desired_count = 2
+    launch_type = "FARGATE"
+
+    network_configuration {
+        subnets = aws_subnet.private[*].id
+        security_groups = [aws_security_group.ecs_sg.id]
+        assign_public_ip = false
+    }
+
+    load_balancer {
+        target_group_arn = aws_lb_target_group.lb_tg.arn
+        container_name = "api"
+        container_port = 8000
+    }
+
+    depends_on = [aws_lb_listener.listener]
 }
