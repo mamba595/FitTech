@@ -55,6 +55,37 @@ resource "aws_lb" "alb" {
     subnets            = aws_subnet.public[*].id
 }
 
+resource "aws_route_table" "private_route_table" {
+    count = var.private_count
+    vpc_id = aws_vpc.my_vpc.id
+
+    route {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.ngw[count.index].id
+    }
+}
+
+resource "aws_route_table" "public_route_table" {
+    vpc_id = aws_vpc.my_vpc.id
+
+    route {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_internet_gateway.IG.id
+    }
+}
+
+resource "aws_route_table_association" "private_associations" {
+    count          = var.private_count
+    subnet_id      = aws_subnet.private[count.index].id
+    route_table_id = aws_route_table.private_route_table[count.index].id
+}
+
+resource "aws_route_table_association" "public_associations" {
+    count          = var.public_count
+    subnet_id      = aws_subnet.public[count.index].id
+    route_table_id = aws_route_table.public_route_table.id
+}
+
 resource "aws_ecs_cluster" "cluster" {
     name = "cluster"
 
