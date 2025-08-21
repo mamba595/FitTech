@@ -248,6 +248,18 @@ resource "aws_ecs_task_definition" "api_task" {
                 {
                     name = "DATABASE_URL",
                     value = "postgres://${var.db_username}:${var.db_password}@${aws_db_instance.postgres_db.endpoint}:5432/${var.db_name}"
+                },
+                {
+                    name = "SECRET_KEY"
+                    value = var.secret_key
+                },
+                {
+                    name = "ALGORITHM"
+                    value = var.algorithm
+                },
+                {
+                    name = "ACCESS_TOKEN_EXPIRE_MINUTES"
+                    value = var.access_token_expire_minutes
                 }
             ]
         }

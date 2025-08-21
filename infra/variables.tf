@@ -35,3 +35,18 @@ variable "image" {
     type = string
     sensitive = true
 }
+
+variable "secret_key" {
+    type = string
+    sensitive = true
+}
+
+variable "algorithm" {
+    type = string
+    sensitive = true
+}
+
+variable "access_token_expire_minutes" {
+    type = string
+    sensitive = true
+}

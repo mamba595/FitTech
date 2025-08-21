@@ -37,7 +37,7 @@ def create_access_token(data: dict, expires_minutes: int = 30):
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        email = payload.get("sub")  # we expect {"sub": "user@example.com"}
+        email = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:

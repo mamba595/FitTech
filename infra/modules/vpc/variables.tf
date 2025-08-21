@@ -25,3 +25,15 @@ variable "db_password" {
 variable "image" {
     type = string
 }
+
+variable "secret_key" {
+    type = string
+}
+
+variable "algorithm" {
+    type = string
+}
+
+variable "access_token_expire_minutes" {
+    type = string
+}

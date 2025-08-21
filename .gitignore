@@ -9,3 +9,9 @@ __pycache__/
 .idea/
 *.sqlite3
 *.db
+infra/terraform.tfvars
+infra/.terraform
+infra/.terraform.lock.hcl
+infra/tfplan
+infra/terraform.tfstate
+infra/terraform.tfstate.backup

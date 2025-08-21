@@ -1,0 +1,219 @@
+name: 'CI/CD pipeline'
+
+on:
+  push:
+    branches: [main]
+  pull:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  ECR_REPOSITORY: deployment
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov flake8 safety
+
+      - name: Linting and formatting checks
+        run: |
+          flake8 app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 app/ --count --max-line-length=88 --statistics
+
+      - name: Run security checks
+        run: |
+          safety check -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit
+
+  build-and-push:
+    name: Build and Push to ECR
+    runs-on: ubuntu-22.04
+    needs: test
+    if: github.ref == 'refs/head/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Log in to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/api
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: ${{ steps.meta.outputs.tags }}
+          format: 'table'
+          exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-22.04
+    needs: build-and-push
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: yourpassword
+          POSTGRES_DB: fitness_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Pull Docker image
+        run: docker pull ${{ needs.build-and-push.outputs.image-tag }}
+      
+      - name: Run container
+        run: docker run -d --name api \
+          -e DATABASE_URL=${{ env.DATABASE_URL }} \
+          -e SECRET_KEY=${{ env.SECRET_KEY }} \
+          -e ALGORITHM=${{ env.ALGORITHM }} \
+          -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ env.ACCESS_TOKEN_EXPIRE_MINUTES }} \
+          -p 8000:8000 ${{ needs.build-and-push.outputs.image-tag }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest requests
+      
+      - name: Run integration tests
+          sleep 10
+          python -m pytest -v tests/integration
+  
+  terraform-deployment:
+    name: Terraform Deployment
+    runs-on: ubuntu-22.04
+    needs: [build-and-push, integration-tests]
+
+    env:
+      TF_VAR_db_name: ${{ secrets.DB_NAME}}
+      TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+      TF_VAR_image: ${{ needs.build-and-push.outputs.image_tag }}
+      TF_VAR_secret_key: ${{ secrets.SECRET_KEY }}
+      TF_VAR_algorithm: ${{ secrets.ALGORITHM }}
+      TF_VAR_access_token_expire_minutes: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.0
+      
+      - name: Terraform Init
+        run: |
+          terraform init
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -out=tfplan
+      
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve tfplan
+
+      - name: Capture API URL
+        id: outputs
+        run: |
+          echo "api_url=$(terraform output -raw api_url)" >> $GITHUB_OUTPUT
+
+  post-deploy-test:
+    name: 'Post-Deployment Test'
+    runs-on: ubuntu-22.04
+    needs: terraform-deployment
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Health check
+        run: |
+          curl -f "${{ needs.terraform-deployment.outputs.api-url }}/health"

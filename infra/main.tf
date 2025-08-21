@@ -7,4 +7,7 @@ module "vpc" {
     db_username = var.db_username
     db_password = var.db_password
     image = var.image
+    secret_key = var.secret_key
+    algorithm = var.algorithm
+    access_token_expire_minutes = var.access_token_expire_minutes
 }
