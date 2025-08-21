@@ -217,4 +217,4 @@ jobs:
 
       - name: Health check
         run: |
-          curl -f "${{ needs.terraform-deployment.outputs.api-url }}/health"
+          curl -f "${{ needs.terraform-deployment.outputs.api_url }}/health"
