@@ -142,13 +142,17 @@ jobs:
       - name: Pull Docker image
         run: docker pull ${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}
       
+      - name: Debug image ref
+        run: echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}"
+
+
       - name: Run container
         run: docker run -d --name api \
           -e DATABASE_URL=${{ env.DATABASE_URL }} \
           -e SECRET_KEY=${{ env.SECRET_KEY }} \
           -e ALGORITHM=${{ env.ALGORITHM }} \
           -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ env.ACCESS_TOKEN_EXPIRE_MINUTES }} \
-          -p 8000:8000 ${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}
+          -p 8000:8000 ${{ needs.build-and-push.outputs.image-digest }}
       
       - name: Install dependencies
         run: |
