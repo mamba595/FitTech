@@ -43,7 +43,7 @@ jobs:
       - name: Run unit tests
         run: |
           export PYTHONPATH="${PYTHONPATH}:."
-          pytest tests/unit --pythonpath=.
+          pytest tests/unit
 
   build-and-push:
     name: Build and Push to ECR
