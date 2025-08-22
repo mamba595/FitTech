@@ -42,7 +42,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pytest tests/unit
+          python -m pytest tests/unit --pythonpath=.
 
   build-and-push:
     name: Build and Push to ECR
