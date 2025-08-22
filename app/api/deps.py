@@ -1,6 +1,5 @@
 from typing import Generator
 from fastapi import Depends, HTTPException, status
-from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from app.core import security
 from app.models.users import User
@@ -11,6 +10,8 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from app.schemas.token import TokenPayload
 from datetime import datetime, timedelta
+import jwt
+from jwt import InvalidTokenError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,7 +29,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         email = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
     user = db.query(User).filter(User.email == email).first()
