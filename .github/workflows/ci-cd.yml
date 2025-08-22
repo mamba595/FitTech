@@ -139,7 +139,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
       
       - name: Pull Docker image
-        run: docker pull ${{ needs.build-and-push.outputs.image-tag }}
+        run: docker pull ${{ needs.build-and-push.outputs.image-digest }}
       
       - name: Run container
         run: docker run -d --name api \
@@ -147,7 +147,7 @@ jobs:
           -e SECRET_KEY=${{ env.SECRET_KEY }} \
           -e ALGORITHM=${{ env.ALGORITHM }} \
           -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ env.ACCESS_TOKEN_EXPIRE_MINUTES }} \
-          -p 8000:8000 ${{ needs.build-and-push.outputs.image-tag }}
+          -p 8000:8000 ${{ needs.build-and-push.outputs.image-digest }}
       
       - name: Install dependencies
         run: |
