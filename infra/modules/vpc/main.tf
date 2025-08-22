@@ -14,7 +14,7 @@ resource "aws_subnet" "public" {
     vpc_id = aws_vpc.my_vpc.id
     cidr_block = cidrsubnet(var.vpc_cidr, 8, count.index)
     map_public_ip_on_launch = true
-    availability_zone = element(data.aws_availability_zones.available.names, count.index)
+    availability_zone = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
     tags = {
         Name = "public-${count.index}"
     }
@@ -24,7 +24,7 @@ resource "aws_subnet" "private" {
     count             = var.private_count
     vpc_id            = aws_vpc.my_vpc.id
     cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + var.public_count)
-    availability_zone = element(data.aws_availability_zones.available.names, count.index)
+    availability_zone = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
     tags = {
         Name = "private-${count.index}"
     }
@@ -70,7 +70,7 @@ resource "aws_route_table" "public_route_table" {
 
     route {
         cidr_block = "0.0.0.0/0"
-        nat_gateway_id = aws_internet_gateway.IG.id
+        gateway_id = aws_internet_gateway.IG.id
     }
 }
 
@@ -220,7 +220,7 @@ resource "aws_db_instance" "postgres_db" {
     vpc_security_group_ids = [aws_security_group.rds_sg.id]
 
     publicly_accessible = false
-    multi_az            = true
+    multi_az            = false
     skip_final_snapshot = true
 }
 
@@ -228,8 +228,8 @@ resource "aws_ecs_task_definition" "api_task" {
     family                   = "api_task"
     network_mode             = "awsvpc"
     requires_compatibilities = ["FARGATE"]
-    cpu                      = "256"
-    memory                   = "512"
+    cpu                      = 512
+    memory                   = 1024
     execution_role_arn       = aws_iam_role.ecs_task_role.arn
     task_role_arn            = aws_iam_role.ecs_task_role.arn
 
@@ -242,7 +242,7 @@ resource "aws_ecs_task_definition" "api_task" {
             essential = true
             portMappings = [{ 
                 containerPort = 8000,
-                hostPort      = 8000
+                protocol      = "tcp"
             }]
             environment = [
                 {
