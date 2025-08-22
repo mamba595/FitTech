@@ -12,29 +12,56 @@ def test_calculate_age():
 
 def test_calculate_bmr_male():
     user = OnboardingInDB(
-        weight=70, height=175, birthdate=date(1990, 1, 1), sex="male",
-        work_schedule="moderate", main_goal="maintain"
+        id=1,
+        user_id=1,
+        weight=70, 
+        height=175, 
+        birthdate=date(1990, 1, 1), 
+        sex="male",
+        work_schedule="moderate", 
+        main_goal="maintain"
     )
     bmr = calculate_bmr(user)
     assert isinstance(bmr, float)
 
 def test_calculate_bmr_female():
     user = OnboardingInDB(
-        weight=60, height=165, birthdate=date(1990, 1, 1), sex="female",
-        work_schedule="moderate", main_goal="maintain"
+        id=1,
+        user_id=1,
+        weight=60, 
+        height=165, 
+        birthdate=date(1990, 1, 1), 
+        sex="female",
+        work_schedule="moderate", 
+        main_goal="maintain"
     )
     bmr = calculate_bmr(user)
     assert isinstance(bmr, float)
 
 def test_calculate_tdee_normal():
-    user = OnboardingInDB(weight=70, height=175, birthdate=date(1990,1,1),
-                          sex="male", work_schedule="moderate", main_goal="maintain")
+    user = OnboardingInDB(
+        id=1,
+        user_id=1,
+        weight=70, 
+        height=175, 
+        birthdate=date(1990,1,1),
+        sex="male", 
+        work_schedule="moderate", 
+        main_goal="maintain"
+    )
     tdee = calculate_tdee(user)
     assert tdee > 0
 
 def test_calculate_macros_normal():
-    user = OnboardingInDB(weight=70, height=175, birthdate=date(1990,1,1),
-                          sex="male", work_schedule="moderate", main_goal="gain")
+    user = OnboardingInDB(
+        id=1,
+        user_id=1,
+        weight=70, 
+        height=175, 
+        birthdate=date(1990,1,1),
+        sex="male", 
+        work_schedule="moderate", 
+        main_goal="gain")
     macros = calculate_macros(user)
     assert macros["goal"] == "gain"
     assert macros["protein_g"] > 0
