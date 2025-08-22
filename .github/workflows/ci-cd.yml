@@ -38,7 +38,7 @@ jobs:
 
       - name: Run security checks
         run: |
-          safety scan -r requirements.txt
+          safety check -r requirements.txt
 
       - name: Run unit tests
         run: |
