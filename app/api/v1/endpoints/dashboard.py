@@ -70,6 +70,7 @@ def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_curr
 
     return {
         "goals": {
+            "bmr": bmr,
             "tdee": tdee,
             "macros": macros,
         },
