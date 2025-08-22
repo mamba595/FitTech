@@ -1,6 +1,6 @@
 from datetime import date
 import pytest
-from app.utils.calculations import calculate_age, calculate_bmr, calculate_tdee, calculate_macros
+from app.services.calculations import calculate_age, calculate_bmr, calculate_tdee, calculate_macros
 from app.schemas.onboarding import OnboardingInDB
 
 def test_calculate_age():
