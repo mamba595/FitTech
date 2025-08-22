@@ -72,7 +72,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ steps.login-ecr.outputs.registry }}/api
+          images: ${{ steps.login-ecr.outputs.registry }}/deployment
 
       - name: Build and push Docker image
         id: build
