@@ -94,7 +94,9 @@ jobs:
 
       - name: Pass image as output
         run: |
-          image="${{ steps.login-ecr.outputs.registry }}/deployment@${{ steps.build.outputs.digest }}"
+          digest="${{ steps.build.outputs.digest }}"
+          digest=$(echo "$digest" | tr -d '\n')
+          image="${{ steps.login-ecr.outputs.registry }}/deployment@$digest"
           echo "image=IMAGE_REF::$image" >> $GITHUB_OUTPUT
 
   integration-tests:
