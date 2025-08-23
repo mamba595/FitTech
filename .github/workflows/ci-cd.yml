@@ -145,6 +145,12 @@ jobs:
           IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@$digest
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
           docker pull "$IMAGE"
+      
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            sleep 10
+          done
 
       - name: Run container
         run: |
@@ -163,7 +169,7 @@ jobs:
       - name: Run integration tests
         run: |
           for i in {1..30}; do
-            curl -s http://localhost:8000/health && break
+            curl -sf http://localhost:8000/health && break
             sleep 10
           done
           export PYTHONPATH="${PYTHONPATH}:."
