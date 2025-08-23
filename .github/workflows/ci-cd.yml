@@ -140,7 +140,7 @@ jobs:
       
       - name: Pull Docker image
         run: |
-          digest="${{ needs.build-and-push.outputs.digest }}"
+          digest="${{ needs.build-and-push.outputs.image-digest }}"
           digest=$(echo "$digest" | tr -d '\n' | tr -d ' ')
           echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@$digest" >> $GITHUB_ENV
           docker pull "$IMAGE"
@@ -198,7 +198,7 @@ jobs:
       
       - name: Set
         run: |
-          digest="${{ needs.build-and-push.outputs.digest }}"
+          digest="${{ needs.build-and-push.outputs.image-digest }}"
           digest=$(echo "$digest" | tr -d '\n' | tr -d ' ')
           echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@$digest" >> $GITHUB_ENV
           echo "TF_VAR_image=$IMAGE" >> $GITHUB_ENV
