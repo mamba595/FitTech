@@ -80,6 +80,6 @@ def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_curr
             "carbs": total_carbs,
             "fat": total_fat,
         },
-        "food_logs": [log.model_dump(by_alias=True) for log in food_logs],
-        "workouts_today": [log.model_dump(by_alias=True) for log in workouts],
+        "food_logs": [log.model_dump() for log in food_logs],
+        "workouts_today": [log.model_dump() for log in workouts],
     }

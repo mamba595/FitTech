@@ -98,3 +98,61 @@ def test_workoutlogs_get(test_user, auth_headers):
     url = f"{BASE_URL}/users/{user_id}/workout-logs"
     resp = requests.get(url, headers=auth_headers)
     assert resp.status_code == 200
+
+def test_dashboard(test_user, auth_headers):
+    user_id = test_user["id"]
+    data = {
+        "user_id": user_id,
+        "name": "Test User",
+        "birthdate": "2000-01-01",
+        "sex": "male",                  
+        "height": 170,
+        "weight": 70,
+        "main_goal": "gain",            
+        "weight_target": 75,
+        "deadline": "2025-12-31",
+        "medical_conditions": "",
+        "sleep_hours": 7.5,
+        "work_schedule": "moderate",    
+        "percFat": 20.0,
+        "percMuscle": 40.0,
+        "injuryHist": "",
+        "expLevel": "beginner",
+        "restrictedFoods": "",
+        "timeAvailability": "1h/day",
+        "materialAccess": "basic"
+    }
+    resp = requests.post(f"{BASE_URL}/users/{user_id}/onboarding", json=data, headers=auth_headers)
+    assert resp.status_code == 201
+
+    url = f"{BASE_URL}/users/{user_id}/food-logs"
+    data = {
+        "food_name": "string",
+        "serving_size": 0,
+        "serving_unit": "string",
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fats": 0,
+        "timestamp": "2025-08-21T13:33:10.012Z"
+    }
+    resp = requests.post(url, json=data, headers=auth_headers)
+    assert resp.status_code == 201
+
+    url = f"{BASE_URL}/users/{user_id}/workout-logs"
+    data = {
+        "date": "2025-08-21T13:34:43.735Z",
+        "workout_type": "string",
+        "duration": 0,
+        "total_distance": 0,
+        "avg_pace": 0,
+        "avg_heart_rate": 0,
+        "max_heart_rate": 0,
+        "calories_burned": 0,
+        "notes": "string"
+    }
+    resp = requests.post(url, json=data, headers=auth_headers)
+    assert resp.status_code == 201
+
+    resp = requests.get(f"{BASE_URL}/dashboard", headers=auth_headers)
+    assert resp.status_code == 200

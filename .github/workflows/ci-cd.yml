@@ -220,7 +220,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      - name: Set
+      - name: Set image
         run: |
           digest="${{ needs.build-and-push.outputs.image-digest }}"
           digest=$(echo "$digest" | tr -d '\n' | tr -d ' ')
@@ -245,14 +245,9 @@ jobs:
         run: |
           terraform apply -auto-approve tfplan
 
-      - name: Capture API URL
-        id: outputs
-        run: |
-          echo "api_url=$(terraform output -raw api_url)" >> $GITHUB_OUTPUT
-
       - name: Health check
         run: |
-          curl -f "${{ needs.terraform-deployment.outputs.api_url }}/health"
+          curl -f "$(terraform output -raw api_url)/health"
 
       - name: Clean infrastructure
         if: always()
