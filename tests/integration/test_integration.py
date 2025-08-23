@@ -2,6 +2,7 @@ import pytest
 import requests
 import os
 import uuid
+from datetime import date
 
 BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
