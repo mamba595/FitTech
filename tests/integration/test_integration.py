@@ -99,6 +99,21 @@ def test_workoutlogs_get(test_user, auth_headers):
     resp = requests.get(url, headers=auth_headers)
     assert resp.status_code == 200
 
-def test_dashboard(auth_headers):
+def test_dashboard(test_user, auth_headers):
+    user_id = test_user["id"]
+    url = f"{BASE_URL}/users/{user_id}/food-logs"
+    data = {
+        "food_name": "string",
+        "serving_size": 0,
+        "serving_unit": "string",
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fats": 0,
+        "timestamp": "2025-08-21T13:33:10.012Z"
+    }
+    resp = requests.post(url, json=data, headers=auth_headers)
+    assert resp.status_code == 201
+
     resp = requests.get(f"{BASE_URL}/dashboard", headers=auth_headers)
     assert resp.status_code == 200

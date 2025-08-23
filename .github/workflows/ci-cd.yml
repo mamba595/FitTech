@@ -252,5 +252,6 @@ jobs:
           curl -f "${{ needs.terraform-deployment.outputs.api_url }}/health"
 
       - name: Clean infrastructure
+        if: always()
         run: |
-          terraform destroy
+          terraform destroy -auto-approve
