@@ -127,3 +127,6 @@ def test_dashboard(test_user, auth_headers):
 
     resp = requests.get(f"{BASE_URL}/dashboard", headers=auth_headers)
     assert resp.status_code == 200
+
+    print(f"Status: {resp.status_code}")
+    print(f"Response: {resp.text}")
