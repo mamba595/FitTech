@@ -24,7 +24,7 @@ def test_health():
     resp = requests.get(f"{BASE_URL}/health")
     assert resp.status_code == 200
 
-def test_onboarding_post(test_user, auth_headers):
+def test_onboarding_post_and_get(test_user, auth_headers):
     user_id = test_user["id"]
     url = f"{BASE_URL}/users/{user_id}/onboarding"
     data = {
@@ -51,11 +51,8 @@ def test_onboarding_post(test_user, auth_headers):
     resp = requests.post(url, json=data, headers=auth_headers)
     assert resp.status_code == 201
 
-def test_onboarding_get(test_user, auth_headers):
-    user_id = test_user["id"]
-    url = f"{BASE_URL}/users/{user_id}/onboarding"
     resp = requests.get(url, headers=auth_headers)
-    assert resp.status_code == 200
+    assert resp.status_code == 200  
 
 def test_foodlogs_post(test_user, auth_headers):
     user_id = test_user["id"]
@@ -102,6 +99,6 @@ def test_workoutlogs_get(test_user, auth_headers):
     resp = requests.get(url, headers=auth_headers)
     assert resp.status_code == 200
 
-def test_dashboard():
+def test_dashboard(auth_headers):
     resp = requests.get(f"{BASE_URL}/dashboard", headers=auth_headers)
     assert resp.status_code == 200
