@@ -162,7 +162,7 @@ jobs:
       
       - name: Run integration tests
         run: |
-          sleep 10
+          sleep 45
           export PYTHONPATH="${PYTHONPATH}:."
           pytest -v tests/integration
     
