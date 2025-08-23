@@ -11,6 +11,12 @@ def calculate_bmr(onboarding: OnboardingInDB) -> float:
 
     weight = onboarding.weight
     height = onboarding.height
+
+    if isinstance(onboarding.birthdate, str):
+        birthdate = datetime.strptime(onboarding.birthdate, '%Y-%m-%d').date()
+    else:
+        birthdate = onboarding.birthdate
+
     age = calculate_age(onboarding.birthdate)
     sex = onboarding.sex.lower()
 
