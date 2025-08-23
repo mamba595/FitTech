@@ -2,7 +2,6 @@ import pytest
 import requests
 import os
 import uuid
-from datetime import date
 
 BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
@@ -106,13 +105,13 @@ def test_dashboard(test_user, auth_headers):
     data = {
         "user_id": user_id,
         "name": "string",
-        "birthdate": date(2025, 8, 21),
+        "birthdate": "2025-08-21",
         "sex": "string",
         "height": 0,
         "weight": 0,
         "main_goal": "string",
         "weight_target": 0,
-        "deadline": date(2025, 8, 21),
+        "deadline": "2025-08-21",
         "medical_conditions": "string",
         "sleep_hours": 0.0,
         "work_schedule": "string",
