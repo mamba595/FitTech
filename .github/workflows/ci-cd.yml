@@ -92,12 +92,8 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Pass image as output
-        run: |
-          digest="${{ steps.build.outputs.digest }}"
-          digest=$(echo "$digest" | tr -d '\n')
-          image="${{ steps.login-ecr.outputs.registry }}/deployment@$digest"
-          echo "image=IMAGE_REF::$image" >> $GITHUB_OUTPUT
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
 
   integration-tests:
     name: Integration tests
@@ -141,13 +137,10 @@ jobs:
       - name: Log in to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Get image
-        run: |
-          echo "IMAGE=${{ needs.build-and-push.outputs.image }}" | sed 's/^IMAGE_REF:://' >> $GITHUB_ENV
       
       - name: Pull Docker image
         run: |
+          echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}" >> $GITHUB_ENV
           docker pull "$IMAGE"
 
       - name: Run container
@@ -178,6 +171,7 @@ jobs:
       TF_VAR_db_name: ${{ secrets.DB_NAME}}
       TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+      TF_VAR_image: ${{ needs.build-and-push.outputs.image-digest }}
       TF_VAR_secret_key: ${{ secrets.SECRET_KEY }}
       TF_VAR_algorithm: ${{ secrets.ALGORITHM }}
       TF_VAR_access_token_expire_minutes: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
@@ -196,11 +190,15 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Get image
-        run: |
-          echo "IMAGE=${{ needs.build-and-push.outputs.image }}" | sed 's/^IMAGE_REF:://' >> $GITHUB_ENV
-          echo "TF_VAR_image=$IMAGE" >> $GITHUB_ENV
+      - name: Log in to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
       
+      - name: Set image
+        run: |
+          echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}" >> $GITHUB_ENV
+          echo "TF_VAR_image=$IMAGE" >> $GITHUB_ENV
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
