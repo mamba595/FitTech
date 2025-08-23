@@ -17,7 +17,7 @@ def calculate_bmr(onboarding: OnboardingInDB) -> float:
     else:
         birthdate = onboarding.birthdate
 
-    age = calculate_age(onboarding.birthdate)
+    age = calculate_age(birthdate)
     sex = onboarding.sex.lower()
 
     if sex == "male":
