@@ -247,7 +247,10 @@ jobs:
 
       - name: Health check
         run: |
-          curl -f "$(terraform output -raw api_url)/health"
+          for i in {1..30}; do
+            curl -f "$(terraform output -raw api_url)/health" && break
+            sleep 10
+          done
 
       - name: Clean infrastructure
         if: always()
