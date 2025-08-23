@@ -148,11 +148,11 @@ jobs:
 
       - name: Run container
         run: docker run -d --name api \
-          -e DATABASE_URL=${{ env.DATABASE_URL }} \
-          -e SECRET_KEY=${{ env.SECRET_KEY }} \
-          -e ALGORITHM=${{ env.ALGORITHM }} \
-          -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ env.ACCESS_TOKEN_EXPIRE_MINUTES }} \
-          -p 8000:8000 "$IMAGE"
+        -e DATABASE_URL=${{ env.DATABASE_URL }} \
+        -e SECRET_KEY=${{ env.SECRET_KEY }} \
+        -e ALGORITHM=${{ env.ALGORITHM }} \
+        -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ env.ACCESS_TOKEN_EXPIRE_MINUTES }} \
+        -p 8000:8000 "$IMAGE"
       
       - name: Install dependencies
         run: |
