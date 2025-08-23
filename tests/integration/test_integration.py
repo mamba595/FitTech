@@ -103,5 +103,5 @@ def test_workoutlogs_get(test_user, auth_headers):
     assert resp.status_code == 200
 
 def test_dashboard():
-    resp = requests.get(f"{BASE_URL}/dashboard")
+    resp = requests.get(f"{BASE_URL}/dashboard", headers=auth_headers)
     assert resp.status_code == 200
