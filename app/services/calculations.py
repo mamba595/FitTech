@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from app.schemas.onboarding import OnboardingInDB
 
 def calculate_age(birthdate: date) -> int:
