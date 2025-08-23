@@ -9,7 +9,7 @@ from app.api.deps import get_db, get_current_user
 router = APIRouter()
 
 
-@router.post("/users/{user_id}/food-logs", response_model=FoodLogInDB)
+@router.post("/users/{user_id}/food-logs", response_model=FoodLogInDB, status_code=201)
 def create_food_log(
     user_id: int,
     log: FoodLogCreate,

@@ -8,7 +8,7 @@ from app.api.deps import get_db, get_current_user
 
 router = APIRouter()
 
-@router.post("/users/{user_id}/workout-logs", response_model=WorkoutLogInDB)
+@router.post("/users/{user_id}/workout-logs", response_model=WorkoutLogInDB, status_code=201)
 def create_workout_log(
     user_id: int,
     log: WorkoutLogCreate,

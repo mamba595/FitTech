@@ -247,16 +247,10 @@ jobs:
         run: |
           echo "api_url=$(terraform output -raw api_url)" >> $GITHUB_OUTPUT
 
-  post-deploy-test:
-    name: 'Post-Deployment Test'
-    runs-on: ubuntu-22.04
-    needs: terraform-deployment
-    if: always()
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Health check
         run: |
           curl -f "${{ needs.terraform-deployment.outputs.api_url }}/health"
+
+      - name: Clean infrastructure
+        run: |
+          terraform destroy
