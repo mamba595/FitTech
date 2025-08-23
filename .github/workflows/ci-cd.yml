@@ -95,6 +95,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
+      image: ${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build.outputs.image-digest }}
 
   integration-tests:
     name: Integration tests
@@ -136,11 +137,10 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Log in to ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
       - name: Pull Docker image
-        run: docker pull "${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}"
+        run: docker pull ${{ needs.build-and-push.outputs.image }}
       
       - name: Run container
         run: docker run -d --name api \
@@ -148,8 +148,7 @@ jobs:
           -e SECRET_KEY=${{ env.SECRET_KEY }} \
           -e ALGORITHM=${{ env.ALGORITHM }} \
           -e ACCESS_TOKEN_EXPIRE_MINUTES=${{ env.ACCESS_TOKEN_EXPIRE_MINUTES }} \
-          -p 8000:8000 \
-          "${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}"
+          -p 8000:8000 ${{ needs.build-and-push.outputs.image }}
       
       - name: Install dependencies
         run: |
@@ -159,11 +158,9 @@ jobs:
       - name: Run integration tests
         run: |
           sleep 10
-          python -m pytest -v tests/integration
+          export PYTHONPATH="${PYTHONPATH}:."
+          pytest -v tests/integration
     
-    outputs:
-      image: ${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}
-  
   terraform-deployment:
     name: Terraform Deployment
     runs-on: ubuntu-22.04
@@ -173,7 +170,7 @@ jobs:
       TF_VAR_db_name: ${{ secrets.DB_NAME}}
       TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-      TF_VAR_image: ${{ needs.integration-tests.outputs.image }}
+      TF_VAR_image: ${{ needs.build-and-push.outputs.image }}
       TF_VAR_secret_key: ${{ secrets.SECRET_KEY }}
       TF_VAR_algorithm: ${{ secrets.ALGORITHM }}
       TF_VAR_access_token_expire_minutes: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
