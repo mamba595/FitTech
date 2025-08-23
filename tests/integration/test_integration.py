@@ -105,24 +105,24 @@ def test_dashboard(test_user, auth_headers):
     data = {
         "user_id": user_id,
         "name": "string",
-        "birthdate": "2025-08-21",
+        "birthdate": date(2025, 8, 21),
         "sex": "string",
         "height": 0,
         "weight": 0,
         "main_goal": "string",
         "weight_target": 0,
-        "deadline": "2025-08-21",
+        "deadline": date(2025, 8, 21),
         "medical_conditions": "string",
-        "sleep_hours": 0,
+        "sleep_hours": 0.0,
         "work_schedule": "string",
-        "percFat": 0,
-        "percMuscle": 0,
+        "percFat": 0.0,
+        "percMuscle": 0.0,
         "injuryHist": "string",
         "expLevel": "string",
         "restrictedFoods": "string",
         "timeAvailability": "string",
         "materialAccess": "string"
-        }
+    }
     resp = requests.post(url, json=data, headers=auth_headers)
     assert resp.status_code == 201
 
