@@ -53,6 +53,7 @@ resource "aws_lb" "alb" {
     internal           = false
     load_balancer_type = "application"
     subnets            = aws_subnet.public[*].id
+    security_groups    = [aws_security_group.alb_sg.id]
 }
 
 resource "aws_route_table" "private_route_table" {
