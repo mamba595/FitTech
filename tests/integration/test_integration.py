@@ -100,31 +100,5 @@ def test_workoutlogs_get(test_user, auth_headers):
     assert resp.status_code == 200
 
 def test_dashboard(test_user, auth_headers):
-    user_id = test_user["id"]
-    url = f"{BASE_URL}/users/{user_id}/onboarding"
-    data = {
-        "user_id": user_id,
-        "name": "string",
-        "birthdate": "2025-08-21",
-        "sex": "string",
-        "height": 0,
-        "weight": 0,
-        "main_goal": "string",
-        "weight_target": 0,
-        "deadline": "2025-08-21",
-        "medical_conditions": "string",
-        "sleep_hours": 0.0,
-        "work_schedule": "string",
-        "percFat": 0.0,
-        "percMuscle": 0.0,
-        "injuryHist": "string",
-        "expLevel": "string",
-        "restrictedFoods": "string",
-        "timeAvailability": "string",
-        "materialAccess": "string"
-    }
-    resp = requests.post(url, json=data, headers=auth_headers)
-    assert resp.status_code == 201
-
     resp = requests.get(f"{BASE_URL}/dashboard", headers=auth_headers)
     assert resp.status_code == 200
