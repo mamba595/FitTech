@@ -189,6 +189,9 @@ jobs:
     name: Terraform Deployment
     runs-on: ubuntu-22.04
     needs: [build-and-push, integration-tests]
+    permissions:
+      contents: read
+      id-token: write
 
     env:
       TF_VAR_db_name: ${{ secrets.DB_NAME}}
