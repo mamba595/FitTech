@@ -165,10 +165,6 @@ jobs:
       - name: Check container status
         run: docker ps -a
 
-      - name: Show container logs
-        run: docker logs api
-
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -185,6 +181,9 @@ jobs:
         run: |
           export PYTHONPATH="${PYTHONPATH}:."
           pytest -v tests/integration
+
+      - name: Show container logs
+        run: docker logs api
     
   terraform-deployment:
     name: Terraform Deployment
