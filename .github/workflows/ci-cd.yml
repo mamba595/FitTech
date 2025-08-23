@@ -140,7 +140,9 @@ jobs:
       
       - name: Pull Docker image
         run: |
-          echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}" >> $GITHUB_ENV
+          digest="${{ steps.build.outputs.digest }}"
+          digest=$(echo "$digest" | tr -d '\n' | tr -d ' ')
+          echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@$digest" >> $GITHUB_ENV
           docker pull "$IMAGE"
 
       - name: Run container
@@ -196,8 +198,10 @@ jobs:
       
       - name: Set image
         run: |
-          echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@${{ needs.build-and-push.outputs.image-digest }}" >> $GITHUB_ENV
-          echo "TF_VAR_image=$IMAGE" >> $GITHUB_ENV
+          digest="${{ steps.build.outputs.digest }}"
+          digest=$(echo "$digest" | tr -d '\n' | tr -d ' ')
+          echo "IMAGE=${{ steps.login-ecr.outputs.registry }}/deployment@$digest" >> $GITHUB_ENV
+          docker pull "$IMAGE"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
