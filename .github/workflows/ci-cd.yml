@@ -248,7 +248,10 @@ jobs:
       - name: Health check
         run: |
           for i in {1..30}; do
-            curl -f "$(terraform output -raw api_url)/health" && break
+            if curl -f "$(terraform output -raw api_url)/health"; then
+              echo "Health check passed"
+              exit 0
+            fi
             sleep 10
           done
 

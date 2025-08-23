@@ -176,9 +176,7 @@ resource "aws_lb_listener" "listener" {
 
     default_action {
         type = "forward"
-        forward {
-            target_group_arn = aws_lb_target_group.lb_tg.arn
-        }
+        target_group_arn = aws_lb_target_group.lb_tg.arn
     }
 
     depends_on = [aws_lb_target_group.lb_tg]
