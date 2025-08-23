@@ -119,7 +119,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://postgres:yourpassword@localhost:5432/fitness_db
+      DATABASE_URL: postgresql://postgres:yourpassword@postgres:5432/fitness_db
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
@@ -154,7 +154,7 @@ jobs:
 
       - name: Run container
         run: |
-          network=$(docker network ls --filter "driver=bridge" --format '{{.Name}}' | grep -v 'bridge' | head -n1)
+          network=$(docker network ls --format '{{.Name}}' | grep github | head -n1)
           docker run -d --name api --network "$network" \
           -e DATABASE_URL=${{ env.DATABASE_URL }} \
           -e SECRET_KEY=${{ env.SECRET_KEY }} \
