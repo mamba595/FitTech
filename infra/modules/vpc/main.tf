@@ -229,8 +229,8 @@ resource "aws_ecs_task_definition" "api_task" {
     family                   = "api_task"
     network_mode             = "awsvpc"
     requires_compatibilities = ["FARGATE"]
-    cpu                      = 512
-    memory                   = 1024
+    cpu                      = 1024
+    memory                   = 2048
     execution_role_arn       = aws_iam_role.ecs_task_role.arn
     task_role_arn            = aws_iam_role.ecs_task_role.arn
 
@@ -238,8 +238,8 @@ resource "aws_ecs_task_definition" "api_task" {
         {
             name = "api"
             image = var.image
-            cpu = 256
-            memory = 512
+            cpu = 512
+            memory = 1024
             essential = true
             portMappings = [{ 
                 containerPort = 8000,
@@ -248,7 +248,7 @@ resource "aws_ecs_task_definition" "api_task" {
             environment = [
                 {
                     name = "DATABASE_URL",
-                    value = "postgres://${var.db_username}:${var.db_password}@${aws_db_instance.postgres_db.endpoint}:5432/${var.db_name}"
+                    value = "postgresql+psycopg2://${var.db_username}:${var.db_password}@${aws_db_instance.postgres_db.address}:${aws_db_instance.postgres_db.port}/${var.db_name}"
                 },
                 {
                     name = "SECRET_KEY"
