@@ -1,13 +1,21 @@
 # FitTech - REST API for Fitness and Nutrition App
 
 ## Description
-Implemented in Python's FastAPI framework and using a relational PostgreSQL database, this REST API provides the necessary functionalities for an app related with Fitness and Nutrition, handling authentication, database integration and HTTPS methods.
-This application has been containerized using Docker. A Dockerfile is used to build the main REST API container, while a Docker Compose file orchestrates two containers: one for the REST API and another for the PostgreSQL database.
+I built this project to learn the whole production cycle, from code to deployment. It includes:
+- A REST API implemented in Python's FastAPI that uses a relational PostgreSQL database, providing the necessary functionalities for an app related with Fitness and Nutrition, handling authentication, database integration and HTTPS methods.
+- Containerization with Docker and Docker Compose, allowing the app to run anywhere, including distributed systems, even without a database in the formal sense, by using Docker Compose to orchestrate the connection between the app container and the PostgreSQL database container with ease.
+- Terraform infrastructure code to deploy the code in a working AWS architecture I designed for high availability, scalability and security. It uses ECS Fargate for the app containers and RDS for the database.
+- A complete CI/CD pipeline, automating quality and security controls and deployment to the cloud, using Github Actions. Also, I developed unit and integration tests for this pipeline, learning pytest in the process.
+- Migrated the app to Kubernetes, from ECS to EKS, to improve container orchestration and make it easier for the app to adopt a microservices architecture rather than a monolith one, even though the migration was done in a different repository in this account to not change what I already built.
+
+This README includes documentation about the REST API and how to run it locally with Docker, while the infra/ folder has a README specifically for Terraform and the AWS architecture, being the following image a diagram of it. The CI/CD pipeline is documented too with a README, which is in the .github/workflows/ folder. It's recommended to read any README related with the part of this project that you are interested the most.
+
+![Architecture](docs/images/ECS-ARCHITECTURE.png)
 
 ## Setup
-To start the application, make sure you have Docker CLI installed and updated to the latest version and run the following command: 
+To run the application locally, make sure you have Docker CLI installed and updated to the latest version and run the following command: 
 ```
-docker-compose up
+docker-compose up --build
 ```
 
 To stop the application:
@@ -15,11 +23,11 @@ To stop the application:
 docker-compose down
 ```
 
-## Database entities
+## Database schemas
 - Users: minimal user information
 - Onboarding: physical and health data.
-- Food-logs: 
-- Workout-logs: 
+- Food-logs: registered foods.
+- Workout-logs: registered workouts.
 
 ## Methods
 - POST auth/register: creates a new user.
