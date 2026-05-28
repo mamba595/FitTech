@@ -5,6 +5,7 @@ __pycache__/
 *.pyc
 .env.*
 .env.*
+!.env.example
 .DS_Store
 .idea/
 *.sqlite3
@@ -13,5 +14,7 @@ infra/terraform.tfvars
 infra/.terraform
 infra/.terraform.lock.hcl
 infra/tfplan
+terraform.tfstate
+*.tfstate*
 infra/terraform.tfstate
 infra/terraform.tfstate.backup
