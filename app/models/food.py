@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
 class FoodLog(Base):
-    __tablename__ = 'food_logs'  # Use underscores instead of dashes
+    __tablename__ = 'food_logs'
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
